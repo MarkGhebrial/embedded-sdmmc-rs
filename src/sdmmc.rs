@@ -171,10 +171,12 @@ where
 
     /// Initializes the card into a known state
     pub fn acquire_with_opts(&mut self, options: AcquireOpts) -> Result<BlockSpi<SPI, CS>, Error> {
+        #[cfg(not(feature = "no-log"))]
         debug!("acquiring card with opts: {:?}", options);
         let f = |s: &mut Self| {
             // Assume it hasn't worked
             s.state = State::Error;
+            #[cfg(not(feature = "no-log"))]
             trace!("Reset card..");
             // Supply minimum of 74 clock cycles without CS asserted.
             s.cs_high()?;
@@ -187,11 +189,13 @@ where
             let mut delay = Delay::new();
             let mut attempts = 32;
             while attempts > 0 {
+                #[cfg(not(feature = "no-log"))]
                 trace!("Enter SPI mode, attempt: {}..", 32i32 - attempts);
 
                 match s.card_command(CMD0, 0) {
                     Err(Error::TimeoutCommand(0)) => {
                         // Try again?
+                        #[cfg(not(feature = "no-log"))]
                         warn!("Timed out, trying again..");
                         // Try flushing the card as done here: https://github.com/greiman/SdFat/blob/master/src/SdCard/SdSpiCard.cpp#L170,
                         // https://github.com/rust-embedded-community/embedded-sdmmc-rs/pull/65#issuecomment-1270709448
@@ -208,6 +212,7 @@ where
                     }
                     Ok(r) => {
                         // Try again
+                        #[cfg(not(feature = "no-log"))]
                         warn!("Got response: {:x}, trying again..", r);
                     }
                 }
@@ -218,6 +223,7 @@ where
                 return Err(Error::CardNotFound);
             }
             // Enable CRC
+            #[cfg(not(feature = "no-log"))]
             debug!("Enable CRC: {}", options.require_crc);
             if s.card_command(CMD59, 1)? != R1_IDLE_STATE && options.require_crc {
                 return Err(Error::CantEnableCRC);
@@ -239,6 +245,7 @@ where
                 }
                 delay.delay(Error::TimeoutCommand(CMD8))?;
             }
+            #[cfg(not(feature = "no-log"))]
             debug!("Card version: {:?}", s.card_type);
 
             let arg = match s.card_type {
