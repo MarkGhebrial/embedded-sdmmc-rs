@@ -13,7 +13,7 @@ readme = "README.md"
 [dependencies]
 embedded-hal = "0.2.3"
 byteorder = { version = "1", default-features = false }
-log = { version = "0.4", default-features = false, optional = true }
+log = { git = "https://github.com/rust-lang/log.git", default-features = false, optional = true }
 defmt = { version = "0.3", optional = true }
 
 [dev-dependencies]
